@@ -9,9 +9,9 @@ data = {
     'Date': [],
     'URL': []
 }
-
+query = input('What are you looking for? ')
 base_url = "https://montreal.craigslist.org"
-search_url = "https://montreal.craigslist.org/search/sss?query=cars&sort=rel&lang=en&cc=us"
+search_url = "https://montreal.craigslist.org/search/sss?query={}&sort=rel&lang=en&cc=us".format(query)
 page_counter = 1
 
 
