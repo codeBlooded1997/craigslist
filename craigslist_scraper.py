@@ -10,18 +10,27 @@ data = {
     'URL': []
 }
 
-base_url = "https://montreal.craigslist.org/search/sss?query=cars&sort=rel&lang=en&cc=us"
-# grabbing the page
-page = requests.get(base_url)
-# Checking if we got the good response from the server-side
-if page.status_code == requests.codes.ok:
-  soup = BeautifulSoup(page.text, 'lxml')
+base_url = "https://montreal.craigslist.org"
+search_url = "https://montreal.craigslist.org/search/sss?query=cars&sort=rel&lang=en&cc=us"
+page_counter = 1
+
+
+def soup_maker(URL):
+    global page_counter
+    # grabbing the page
+    print('Grabbing page {} ...'.format(page_counter))
+    page = requests.get(URL)
+    # Checking if we got the good response from the server-side
+    if page.status_code == requests.codes.ok:
+        soup = BeautifulSoup(page.text, 'lxml')
+        return soup
+
 
 # This function parse the page
-def parse_page(URL):
-
+def parse_page(soup_obj):
+    global page_counter
     # Getting list of items available in the page
-    all_items = soup.find('div', class_='content').find('ul', class_='rows').findAll('li')
+    all_items = soup_obj.find('div', class_='content').find('ul', class_='rows').findAll('li')
 
     # Iterating through the items in page
     for item in all_items:
@@ -53,22 +62,30 @@ def parse_page(URL):
         else:
             date['Title'].append('none')
 
-
-# This function saves data into a csv file
-def to_csv():
-    table = pd.DataFrame(data, columns=['Title', 'Price', 'Date', "URL"])
-    table.index = table.index + 1
-    table.to_csv('craigslist-products.csv', sep=',', index=False, encoding='utf-8')
-
-def next_page():
-    next_page_text = soup.find('a', class_='button next').text
-
-    if next_page_text == 'next > ':
-        next_page_url = soup.find('a', class_='button next')['href']
+    # Findig url to next page
+    next_page_text = soup_obj.find('a', class_='button next')['href']
+    if len(next_page_text) != 0:
+        page_counter = page_counter + 1
+        next_page_url = soup_obj.find('a', class_='button next')['href']
+        print("Page {} found".format(page_counter))
         new_url = base_url + next_page_url
-        print(new_url)
+        new_bsObj = soup_maker(new_url)
+        parse_page(new_bsObj)
     else:
         print('It was last page')
 
-parse_page(base_url)
+
+
+# This function saves data into a data frame and creates a csv file
+def to_csv():
+    print('panda created!')
+    table = pd.DataFrame(data, columns=['Title', 'Price', 'Date', "URL"])
+    table.index = table.index + 1
+    print("csv created")
+    table.to_csv('craigslist-products.csv', sep=',', index=False, encoding='utf-8')
+
+
+bsObj = soup_maker(search_url)
+parse_page(bsObj)
+print('{} items scraped.'.format(len(data['Title'])))
 to_csv()

@@ -4,7 +4,7 @@ import lxml
 import pandas as pd
 
 base_url = "https://montreal.craigslist.org"
-search_url = "https://montreal.craigslist.org/search/sss?query=cars&sort=rel&lang=en&cc=us"
+search_url = "https://montreal.craigslist.org/search/sss?s=360&query=cars&sort=rel"
 
 page = requests.get(search_url)
 if page.status_code == requests.codes.ok:
@@ -47,14 +47,15 @@ for item in all_items:
         data['Title'].append(title)
     else:
         date['Title'].append('none')
-next_page_text = soup.find('a', class_='button next').text
+next_page_text = soup.find('a', class_='button next')['href']
 
-if next_page_text == 'next > ':
-    next_page_url = soup.find('a', class_='button next')['href']
-    new_url = base_url + next_page_url
-    print(new_url)
-else:
-    print('It was last page')
+#if next_page_text == 'next > ':
+#    next_page_url = soup.find('a', class_='button next')['href']
+#    new_url = base_url + next_page_url
+#    print(new_url)
+#else:
+#    print('It was last page')
+print(len(next_page_text))
 
 table = pd.DataFrame(data, columns=['Title', 'Price', 'Date', 'URL'])
 table.index = table.index + 1
