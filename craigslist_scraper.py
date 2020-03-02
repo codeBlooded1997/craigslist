@@ -64,15 +64,18 @@ def parse_page(soup_obj):
 
     # Findig url to next page
     next_page_text = soup_obj.find('a', class_='button next')['href']
+    # Checking that it is not the last page
     if len(next_page_text) != 0:
         page_counter = page_counter + 1
         next_page_url = soup_obj.find('a', class_='button next')['href']
         print("Page {} found".format(page_counter))
+        # creating new url
         new_url = base_url + next_page_url
         new_bsObj = soup_maker(new_url)
         parse_page(new_bsObj)
     else:
         print('It was last page')
+        print()
 
 
 
