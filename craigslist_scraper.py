@@ -11,14 +11,15 @@ data = {
 }
 
 base_url = "https://montreal.craigslist.org/search/sss?query=cars&sort=rel&lang=en&cc=us"
+# grabbing the page
+page = requests.get(base_url)
+# Checking if we got the good response from the server-side
+if page.status_code == requests.codes.ok:
+  soup = BeautifulSoup(page.text, 'lxml')
 
 # This function parse the page
 def parse_page(URL):
-    # grabbing the page
-    page = requests.get(base_url)
-    # Checking if we got the good response from the server-side
-    if page.status_code == requests.codes.ok:
-      soup = BeautifulSoup(page.text, 'lxml')
+
     # Getting list of items available in the page
     all_items = soup.find('div', class_='content').find('ul', class_='rows').findAll('li')
 
@@ -59,7 +60,15 @@ def to_csv():
     table.index = table.index + 1
     table.to_csv('craigslist-products.csv', sep=',', index=False, encoding='utf-8')
 
+def next_page():
+    next_page_text = soup.find('a', class_='button next').text
 
+    if next_page_text == 'next > ':
+        next_page_url = soup.find('a', class_='button next')['href']
+        new_url = base_url + next_page_url
+        print(new_url)
+    else:
+        print('It was last page')
 
 parse_page(base_url)
 to_csv()
